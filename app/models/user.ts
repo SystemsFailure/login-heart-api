@@ -3,7 +3,7 @@ import { withAuthFinder } from '@adonisjs/auth'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
-import { BaseModel, column, hasOne, belongsTo } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasOne, belongsTo, beforeSave } from '@adonisjs/lucid/orm'
 import type { HasOne, BelongsTo } from '@adonisjs/lucid/types/relations'
 import Profile from '#models/profile'
 import Role from './role.js'
@@ -48,4 +48,14 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare updatedAt: DateTime | null
 
   static accessTokens = DbAccessTokensProvider.forModel(User)
+
+  /**
+   * HOOKS
+   */
+  @beforeSave()
+  static async hashPassword(user: User) {
+    if (user.$dirty.password) {
+      user.password = await hash.make(user.password)
+    }
+  }
 }
