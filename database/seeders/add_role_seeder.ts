@@ -1,0 +1,66 @@
+import Role from '#models/role'
+import { BaseSeeder } from '@adonisjs/lucid/seeders'
+
+export default class extends BaseSeeder {
+  async run() {
+    await Role.createMany([
+      {
+        name: 'Администратор',
+        description: 'Роль с полными правами доступа',
+        is_admin: true,
+        is_moderator: false,
+        is_user: false,
+        is_premium: false,
+        is_verified: false,
+        is_blocked: false,
+        can_like: true,
+        can_message: true,
+        can_view_profiles: true,
+        can_block_users: true,
+        can_report_users: true,
+        can_create_events: false,
+        can_join_events: false,
+        can_view_timeline: true,
+        can_send_gifts: false,
+      },
+      {
+        name: 'Обычный пользователь',
+        description: 'Роль для обычных пользователей',
+        is_admin: false,
+        is_moderator: false,
+        is_user: true,
+        is_premium: false,
+        is_verified: false,
+        is_blocked: false,
+        can_like: true,
+        can_message: true,
+        can_view_profiles: true,
+        can_block_users: true,
+        can_report_users: true,
+        can_create_events: false,
+        can_join_events: false,
+        can_view_timeline: true,
+        can_send_gifts: false,
+      },
+      {
+        name: 'Менеджер',
+        description: 'Роль для менеджеров',
+        is_admin: false,
+        is_moderator: true,
+        is_user: false,
+        is_premium: false,
+        is_verified: false,
+        is_blocked: false,
+        can_like: true,
+        can_message: true,
+        can_view_profiles: true,
+        can_block_users: true,
+        can_report_users: true,
+        can_create_events: false,
+        can_join_events: false,
+        can_view_timeline: true,
+        can_send_gifts: false,
+      },
+    ])
+  }
+}
