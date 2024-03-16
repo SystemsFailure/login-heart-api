@@ -26,6 +26,15 @@ export default class TransactionService
         this.trx = __trx__;
         return this;
     }
+    // Запись в базу данных через транзакцию
+    public async insert(tableName: string = "users", data: any) : Promise<TransactionService>
+    {
+        if(this.trx != null) {
+            await this.trx.insertQuery().table(tableName).insert(data);
+        }
+        return this;
+    }
+    // Не строительный метод создания инстанса транзакции
     public async create(options: TransactionOptions,) : Promise<TransactionClientContract>
     {
         return await this.database.transaction(options)

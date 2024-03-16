@@ -36,9 +36,11 @@ export default class UserService {
                 user.password = payload.password;
                 user.roleId = roleId;
                 
-                user.useTransaction(trx)
+                await user.useTransaction(trx)
 
-                user.save();
+                await user.save();
+                await trx.commit();
+                
                 return user
             }
         }
