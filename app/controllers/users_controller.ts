@@ -1,20 +1,32 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
+import TokenService from '#services/token.service'
+import UserService from '#services/user.service'
+import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
+import { inject } from '@adonisjs/core'
 
+@inject()
 export default class UsersController {
+    constructor(protected userService: UserService) {}
+    
     async index({response, params, auth} : HttpContext) {
         // Здесь теперь есть роли
-        const __auth__ =  await auth.use('api').authenticate()
+        await auth.use('api').authenticate()
 
-        const currentPage = params.currentPage
-        const perPage = params.perPage
+        const currentPage: number = params.currentPage
+        const perPage: number = params.perPage
 
         if(!currentPage || !perPage ) response.apiError('you is not defined the currentPage and perPage')
 
         try {
             if(auth.use('api').isAuthenticated) {
-                const users = await User.query().paginate(currentPage, perPage)
-                response.apiSuccess(users)
+                const result: ModelPaginatorContract<User> = await this.userService.index(
+                    {
+                        currentPage, 
+                        perPage,
+                    }
+                );
+                response.apiSuccess(result.serialize());
             } else {
                 response.apiError('you is not authenticated')
             }
@@ -24,46 +36,52 @@ export default class UsersController {
     }
 
     async store({request, response} : HttpContext) {
+        const tokenService = new TokenService();
+
+        const name = request.input('name');
+        const email = request.input('email');
+        const password = request.input('password');
         try {
-            const name = request.input('name')
-            const email = request.input('email')
-            const password = request.input('password')
-
-            const user = await User.create({
-                name: name,
-                email: email,
-                password: password,
-                roleId: 2,
-            })
-
-            const token = await User.accessTokens.create(user)
-
-            response.apiSuccess({data: user, token: token})
+            const user: User | undefined = await this.userService.create(
+                {
+                    name: name, 
+                    email: email, 
+                    password: password
+                }, 2);
+            if(user) {
+                const token = await tokenService.create(user);
+                response.apiSuccess({data: user, token: token});
+            }
         } catch (error) {
-            response.apiError(error)
+            response.apiError(error);
         }
     }
 
     async alone({request, response} : HttpContext) {
+        const id: number = request.param('id')
         try {
-            const user = await User.findBy('id', request.param('id'))
-            response.apiSuccess(user)
+            const user: User | null = await this.userService.getOne(id);
+            if(user) {
+                response.apiSuccess(user);
+            } else {
+                response.apiError(`User is not found, result = ${user}`)
+            }
         } catch (error) {
-            response.apiError(error)
+            response.apiError(error);
         }
     }
 
     async update({request, response} : HttpContext) {
         try {
-            const newData = request.all()
-            const user = await User.find(request.param('id'))
+            const newData = request.all();
+            const user = await User.find(request.param('id'));
             if(user) {
-                user.merge(newData)
-                await user.save()
+                user.merge(newData);
+                await user.save();
             }
-            response.apiSuccess('data updated')
+            response.apiSuccess('data updated');
         } catch (error) {
-            response.apiError(error)
+            response.apiError(error);
         }
     }
 }
