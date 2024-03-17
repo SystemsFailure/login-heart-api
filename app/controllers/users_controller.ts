@@ -4,6 +4,7 @@ import TokenService from '#services/token.service'
 import UserService, { UserDTO } from '#services/user.service'
 import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { inject } from '@adonisjs/core'
+import { TypeServiceResponse } from '../utils/apiServiceResponse.js'
 
 @inject()
 export default class UsersController {
@@ -80,7 +81,7 @@ export default class UsersController {
                 password: request.input('password'),
             };
 
-            const result = await this.userService.merge(userId, newData);
+            const result: TypeServiceResponse = await this.userService.merge(userId, newData);
 
             response.apiSuccess(result);
         } catch (error) {
