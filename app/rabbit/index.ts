@@ -5,8 +5,6 @@ export interface IRabbitMQManagerConnect {
     port: number;
     username: string;
     password: string;
-    queueName: string;
-    exchange: string;
 }
 export interface IRabbitMQErrorHandlerFormat {}
 export interface IRabbitMQResponseFormat {}
@@ -18,20 +16,20 @@ export default class RabbitMQManager {
 
     constructor() {}
 
-    async connect(params: IRabbitMQManagerConnect): Promise<void> {
+    public async connect(params: IRabbitMQManagerConnect): Promise<void> {
         this.connection = await connect(params);
         this.channel = await this.connection.createChannel();
     }
-    async disconnect(): Promise<void> {
+    public async disconnect(): Promise<void> {
         if (this.channel) await this.channel.close();
         if (this.connection) await this.connection.close();
     }
-    bindQueue(queue: string, source: string, pattern: string) {
+    public bindQueue(queue: string, source: string, pattern: string) {
         if (!this.channel) throw new Error("channel not created");
         return this.channel.bindQueue(queue, source, pattern);
     }
 
-    async publish(
+    public async publish(
         queue: string,
         message: Record<string, any> | string,
         exchange = "",
@@ -42,7 +40,7 @@ export default class RabbitMQManager {
         if (!exchange) return this.channel.sendToQueue(queue, bufferMessage);
         return this.channel.publish(exchange, routingKey, bufferMessage);
     }
-    async subscribe(
+    public async subscribe(
         queue: string,
         cb: (msg: ConsumeMessage | null) => void,
     ): Promise<void> {
@@ -58,7 +56,7 @@ export default class RabbitMQManager {
             { noAck: false },
         );
     }
-    unsubscribe(queue: string) {
+    public unsubscribe(queue: string) {
         if (!this.channel) throw new Error("channel not created");
         return this.channel.cancel(queue);
     }
@@ -67,11 +65,11 @@ export default class RabbitMQManager {
         if (this.channel) await this.channel.close();
         if (this.connection) await this.connection.close();
     }
-    assertQueue(queue: string, options?: Options.AssertQueue) {
+    public assertQueue(queue: string, options?: Options.AssertQueue) {
         if (!this.channel) throw new Error("channel not created");
         return this.channel.assertQueue(queue, options);
     }
-    assertExchange(
+    public assertExchange(
         exchange: string,
         type: string,
         options?: Options.AssertExchange | undefined,
@@ -79,22 +77,20 @@ export default class RabbitMQManager {
         if (!this.channel) throw new Error("channel not created");
         return this.channel.assertExchange(exchange, type, options);
     }
-    deleteQueue(queue: string) {
+    public deleteQueue(queue: string) {
         if (!this.channel) throw new Error("channel not created");
         return this.channel.deleteQueue(queue);
     }
-    deleteExchange(exchange: string) {
+    public deleteExchange(exchange: string) {
         if (!this.channel) throw new Error("channel not created");
         return this.channel.deleteExchange(exchange);
     }
 }
 
 
-export const options: IRabbitMQManagerConnect = {
-    hostname: 'amqp://guest:guest@localhost:5672',
+export const defaultOptions: IRabbitMQManagerConnect = {
+    hostname: 'localhost',
     port: 5672,
     username: "guest",
     password: "guest",
-    queueName: 'authQueue',
-    exchange: 'authExchange',
 };
