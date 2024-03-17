@@ -22,7 +22,7 @@ export default defineConfig({
   |
   */
   providers: [
-    () => import('../api/providers/app.provider.js'),
+    () => import('../login-heart-api/providers/app.provider.js'),
     () => import('@adonisjs/core/providers/app_provider'),
     () => import('@adonisjs/core/providers/hash_provider'),
     {
