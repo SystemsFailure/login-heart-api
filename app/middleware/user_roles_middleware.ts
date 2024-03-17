@@ -1,3 +1,4 @@
+import Role from '#models/role'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 
@@ -6,8 +7,10 @@ export default class UserRolesMiddleware {
     /**
      * Middleware logic goes here (before the next call)
      */
-    console.log(ctx)
-
+    await ctx.auth.use('api').authenticate()
+    const user = ctx.auth.user
+    const role = await Role.findBy('id', user?.roleId)
+    
     /**
      * Call next method in the pipeline and return its output
      */
