@@ -1,9 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import TokenService from '#services/token.service'
-import UserService from '#services/user.service'
+import UserService, { UserDTO } from '#services/user.service'
 import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { inject } from '@adonisjs/core'
+import { TypeServiceResponse } from '../utils/apiServiceResponse.js'
 
 @inject()
 export default class UsersController {
@@ -72,14 +73,17 @@ export default class UsersController {
     }
 
     async update({request, response} : HttpContext) {
+        const userId = request.param('id')
         try {
-            const newData = request.all();
-            const user = await User.find(request.param('id'));
-            if(user) {
-                user.merge(newData);
-                await user.save();
-            }
-            response.apiSuccess('data updated');
+            const newData: UserDTO = {
+                name: request.input('name'),
+                email: request.input('email'),
+                password: request.input('password'),
+            };
+
+            const result: TypeServiceResponse = await this.userService.merge(userId, newData);
+
+            response.apiSuccess(result);
         } catch (error) {
             response.apiError(error);
         }
